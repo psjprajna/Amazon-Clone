@@ -1,0 +1,40 @@
+.check{
+    display: flex;
+    margin:10px;
+    padding: 20px;
+    z-index: 1;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.check:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    -ms-transform: scale(1.03); /* IE 9 */
+    -webkit-transform: scale(1.03); /* Safari 3-8 */
+    transform: scale(1.02, 1.02); 
+  }
+.check_img{
+    object-fit: contain;
+    width: 180px;
+    height: 180px;
+}
+.check_info{
+    padding-left: 20px;
+}
+.check_title{
+    font-size: 17px;
+    font-weight: 800px;
+}
+.check_price{
+    margin-top: 0px;
+}
+.check_rating{
+    display: flex;
+    margin-top: 0px;
+}
+.check_info > button{
+    background-color: #f0c14b;
+    border: 1px solid;
+    border-color: #a8873a #9c7e31 #846a29;
+}
