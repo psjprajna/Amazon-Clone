@@ -6,32 +6,34 @@ import Product from './Product';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css'; 
 import { useStateValue } from '../StateProvider';
+import AddProduct from './AddProduct';
+import { firestore } from '../firebase'
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 const fadeImages = [
     'https://images-eu.ssl-images-amazon.com/images/G/02/digital/video/gateway/placement/launch/All_Or_Nothing_Tottenham_Hotspur_S1/AONT_S1_GWBleedingHero_FT_COVIDUPDATE_XSite_1500X600_PV_en-GB._CB406302419_.jpg',
     'https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Hero/Fuji_TallHero_Currency_v2_en_US_2x._CB428993290_.jpg',
     'https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Hero/Fuji_TallHero_45M_v2_1x._CB432458380_.jpg'
 ];
-
+ 
 function HomePage(){
-    const [{basket,list},dispatch]=useStateValue();
-    // var count=1
-    // const items = []
-
-    // while(1){
-    //     if(count<3){
-    //         count++
-    //     }
-    //     else if(count>3 && count < 6){
-    //         count++
-    //     }
-    //     else if(count>6){
-    //         count=1
-    //     }
-    // }
+    const [{list},dispatch]=useStateValue();
+    const [orders,setOrders]=useState([])
+    
+    useEffect(()=>{
+        firestore
+        .collection("NewProduct")
+        .orderBy('created','desc')
+        .onSnapshot(snapshot => (
+            setOrders(snapshot.docs.map(doc => ({
+                id: doc.id,
+                data: doc.data()
+            })))
+        ))
+    },[])
     return (
         <div className="home"> 
-
             <Fade className="home-image">
                 <img  src={fadeImages[0]} />
                 <img  src={fadeImages[1]} />
@@ -50,7 +52,7 @@ function HomePage(){
                 <Product 
                     id="123456"
                     title="Alexa"
-                    price={11.96}
+                    price={20.05}
                     image="https://images-na.ssl-images-amazon.com/images/I/6182S7MYC2L._AC_UL320_SR320,320_.jpg"
                     rating={3}
                 />
@@ -60,15 +62,15 @@ function HomePage(){
                 <Product 
                     id="123457"
                     title="Ipad"
-                    price={11.96}
+                    price={7.87}
                     image="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/ipad-mini-select-wifi-spacegray-201911_FMT_WHH?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1573825365923"
-                    rating={5}
+                    rating={4}
                 />
 
                 <Product 
                     id="123458"
                     title="Electric Mixer"
-                    price={11.96}
+                    price={10.28}
                     image="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRqZ0csFdv6KS6qacive3I6PrT2syuNFEuJvA&usqp=CAU"
                     rating={3}
                 />
@@ -76,9 +78,9 @@ function HomePage(){
                 <Product 
                     id="123459"
                     title="DSLR Camera"
-                    price={11.96}
+                    price={35}
                     image="https://www.awesomedynamic.com/wp-content/uploads/2018/02/awesome-dynamic-amazon-product-photography-camera.png"
-                    rating={3}
+                    rating={2}
                 />
             </div>
 
@@ -86,32 +88,19 @@ function HomePage(){
                 <Product 
                     id="123450"
                     title="Smart TV"
-                    price={11.96}
+                    price={40}
                     image="https://images-na.ssl-images-amazon.com/images/I/81vlA84pg6L._SX679_.jpg"
-                    rating={3}
+                    rating={4}
                 />
             </div> 
+         
+            <div >
+                {orders?.map(order => (
+                    <AddProduct order={order}/>
+                ))}
+            </div>
             
-            { list?
-                ( 
-                    <div className="home-row">
-                        {list.map(item=>(
-                            <Product
-                                id={item.id}
-                                title={item.title}
-                                image={item.image}
-                                price={Number(item.price)}
-                                rating={Number(item.rating)}
-                            />
-                        ))}
-                    </div> 
-    //https://cdn.shopify.com/s/files/1/1821/3729/products/personalised-mens-wallet-with-charm-mens-wallet-14190065123467.jpg?v=1592125708
-                ):
-                (
-                    <> </>
-                ) 
-            } 
-            <ToastContainer />
+            <ToastContainer/>
         </div>
     )
 }

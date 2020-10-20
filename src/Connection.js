@@ -1,12 +1,12 @@
 import React,{useEffect}  from 'react';
-import App from './App';
+import Login from './components/Login'
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import CssBaseline from "@material-ui/core/CssBaseline";
 import HomePage from './components/HomePage';
 import AP from './AP';
-import Header from './Header';
 import Checkout from './components/Checkout'
 import Payment from './components/Payment'
+import Orders from './components/Orders'
 import { useStateValue} from '../src/StateProvider';
 import {auth} from './firebase';
 import {loadStripe} from '@stripe/stripe-js'
@@ -18,8 +18,7 @@ export default function Connection() {
     const[{},dispatch]=useStateValue();
 
     useEffect(() => {
-        auth.onAuthStateChanged(authUser => {
-            console.log('The user is: ',authUser);
+        auth.onAuthStateChanged(authUser => { 
 
             if(authUser){
                 dispatch({
@@ -43,7 +42,7 @@ export default function Connection() {
                         <AP/>
                         <HomePage />
                 </Route>
-                <Route path='/SignIn' component={App}/>
+                <Route path='/SignIn' component={Login}/>
                 <Route path='/Checkout' component={Checkout}>
                     <AP/>
                     <Checkout/>
@@ -54,7 +53,14 @@ export default function Connection() {
                         <Payment/>
                     </Elements>
                 </Route>
+                <Route path='/orders' exact component={Orders}>
+                        <AP/>
+                        <Orders />
+                </Route>
             </Switch>
         </BrowserRouter>
     )
 }
+
+
+//firebase init hosting build  no npm run build && firebase deploy --only hosting

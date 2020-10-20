@@ -4,7 +4,7 @@ import './Product.css'
 import {  toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useHistory } from 'react-router';
-
+import { firestore } from '../firebase'
 export default function Product({id, title, rating, image, price }) {
     //Toast Notification
     const toastId = React.useRef(null);
@@ -31,6 +31,14 @@ export default function Product({id, title, rating, image, price }) {
         dispatch({
             type:"REMOVE_PRODUCT",
             id:id, 
+        })
+        //from firebase
+        firestore.collection('NewProduct').get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            doc.ref.delete()
+          });
         })
     }
 

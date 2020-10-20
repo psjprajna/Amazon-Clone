@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import './Payment.css'
-import {useStateValue} from '../StateProvider'; 
+import { useStateValue } from '../StateProvider'; 
 import CheckoutProduct from './CheckoutProduct';
 import { Link, useHistory } from "react-router-dom";
-import { useElements, useStripe, CardElement } from '@stripe/react-stripe-js';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import CurrencyFormat from 'react-currency-format';
 import { getBasketTotal } from '../reducer';
+import axios from '../axios'
+import { firestore } from '../firebase'
 
 function Payment() {
 
     const history=useHistory();
-    const [{basket,user}]=useStateValue();
-    const stripe=useStripe()
+    const [{basket,user},dispatch]=useStateValue();
+    const stripe = useStripe();
     const elements=useElements()
     const [processing, setProcessing]=useState("")
     const [succeeded, setSucceeded]=useState(false)
@@ -21,7 +23,11 @@ function Payment() {
 
     useEffect(() =>{
         const getClientSecret= async () => {
-           // const response= await axios
+            const response = await axios({
+                method: 'post',
+                url: `/payments/create?total=${getBasketTotal(basket) * 100* 75}`
+            });
+            setClientSecret(response.data.clientSecret)
         }
         getClientSecret()
     },[basket])
@@ -30,7 +36,32 @@ function Payment() {
         event.preventDefault()
         setProcessing(true)
 
-        const payload= await stripe
+        const payload= await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement)
+            }
+        }).then(({paymentIntent})=>{
+
+            firestore
+                .collection('users')
+                .doc(user?.uid)
+                .collection("orders")
+                .doc(paymentIntent.id)
+                .set({
+                    basket: basket,
+                    amount: paymentIntent.amount,
+                    created: paymentIntent.created
+                })
+
+            setSucceeded(true)
+            setError(null)
+            setProcessing(false)
+
+            dispatch({
+                type: 'EMPTY_BASKET'
+            })
+            history.replace('/orders')
+        })
     }
 
     const handleChange= event => {
@@ -78,7 +109,7 @@ function Payment() {
                         <form onSubmit={handleSubmit}>
                             <CardElement onChange={handleChange}/>
                             <div className="details">
-                            <CurrencyFormat 
+                                <CurrencyFormat 
                                     renderText={(value) => (
                                         <>
                                             <p>

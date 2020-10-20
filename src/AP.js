@@ -19,7 +19,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {useStateValue} from './StateProvider'; 
 import { useHistory, withRouter } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { auth } from './firebase';
+import { auth,firestore } from './firebase';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -181,6 +181,7 @@ ScrollTop.propTypes = {
 };
 
 const PrimarySearchAppBar = props => {
+  
   const history=useHistory()
   const classes = useStyles();
   const theme = useTheme();
@@ -192,9 +193,12 @@ const PrimarySearchAppBar = props => {
   const [{basket,list,user},dispatch]=useStateValue()
 
   const handleAuthentication =()=>{
-      if(user){
+    if(user){
       auth.signOut();
-      }
+      dispatch({
+        type: 'EMPTY_BASKET'
+      })
+    }
   }
 
   const [open, setOpen] = React.useState(false);
@@ -226,35 +230,41 @@ const PrimarySearchAppBar = props => {
   const handleClickOpen = () => {
       setOpen(true);
   }
+  
   const handleClose = () => {
-      setOpen(false);
+    const createdAt = new Date();
+    firestore.collection("NewProduct").add({
+      list:list,
+      created:createdAt
+    })
+    setOpen(false);
   }
   const addProduct = () => {
       if(id!=='' && title!=='' && rating!=='' && Number(rating)<6 && image!=='' && price!==''){
-          dispatch({
-              type:"ADD_PRODUCT",
-              item:{
-                  id:id, 
-                  title:title, 
-                  rating:rating, 
-                  image:image, 
-                  price:price
-              }
-          })
-          setId('');
-          setName('');
-          setPrice('');
-          setRating('');
-          setImag('');
-          //show toast
-          showToast();
+        dispatch({
+            type:"ADD_PRODUCT",
+            item:{
+                id:id, 
+                title:title, 
+                rating:rating, 
+                image:image, 
+                price:price
+            }
+        })
+        setId('');
+        setName('');
+        setPrice('');
+        setRating('');
+        setImag('');
+        //show toast
+        showToast();
       }
       else{
-          setId('');
-          setName('');
-          setPrice('');
-          setRating('');
-          setImag('');
+        setId('');
+        setName('');
+        setPrice('');
+        setRating('');
+        setImag('');
       }
   }
   //Sliding Navigation
@@ -404,26 +414,26 @@ const PrimarySearchAppBar = props => {
                       </span>
                   ):
                   (
-                      <div  className="header_options"/>
+                    <div  className="header_options"/>
                   ) 
                   }  
                 </div>
                 <Link to={!user && '/SignIn'}>
                     <div className="header_options" onClick={handleAuthentication}>
                         <span className="line_one">
-                            Hello {user? user.email.split('@')[0] :'Guest'}
+                          Hello {user? user.email.split('@')[0] :'Guest'}
                         </span>
                         <span className="line_two">
-                            {user? 'Sign Out':'Sign In'}
+                          {user? 'Sign Out':'Sign In'}
                         </span>
                     </div>
                 </Link>
                 <div className="header_options">
                     <Link to={!user && '/SignIn'}>
                       <IconButton aria-label="show 17 new notifications" color="inherit"  onClick={() => handleMenuClose('/Checkout')}>
-                            <Badge badgeContent={basket.length} color="secondary" >
-                                <ShoppingCartIcon style={{color:"white"}}/>
-                            </Badge>
+                        <Badge badgeContent={basket.length} color="secondary" >
+                          <ShoppingCartIcon style={{color:"white"}}/>
+                        </Badge>
                       </IconButton>
                     </Link>
                 </div>
@@ -453,7 +463,7 @@ const PrimarySearchAppBar = props => {
                   </ClickAwayListener>
                 </div>
                 <div className="header_options">
-                    <IconButton edge="end" aria-label="account of current user" aria-haspopup="true" color="inherit">
+                    <IconButton edge="end" aria-label="account of current user" aria-haspopup="true" color="inherit" onClick={() => handleMenuClose('/orders')}>
                         <AccountCircle />
                     </IconButton>
                 </div>
